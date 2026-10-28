@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Upwork Job Info — Dashboard</title>
+  <link rel="stylesheet" href="theme.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <main class="db-page">
+    <div id="authBanner" class="banner hidden">
+      <span class="banner-dot"></span>
+      <span class="banner-text">
+        <strong>No Upwork search token.</strong>
+        Checks are paused. Opening the job search page once sets it — signing in
+        alone is not enough.
+      </span>
+      <button type="button" class="btn btn-sm banner-btn" id="authOpenBtn">Open job search</button>
+    </div>
+
+    <nav class="tabs db-tabs">
+      <button type="button" class="tab active" data-tab="jobs" id="tabJobs">
+        Jobs <span class="tab-badge" id="jobsBadge">0</span>
+      </button>
+      <button type="button" class="tab" data-tab="log" id="tabLog">
+        Activity Log <span class="tab-badge" id="logBadge">0</span>
+      </button>
+      <button type="button" class="tab" data-tab="lookup" id="tabLookup">Lookup</button>
+      <button type="button" class="tab" data-tab="settings" id="tabSettings">Settings</button>
+      <div class="tabs-actions">
+        <button class="btn btn-icon" id="checkNowBtn" type="button" title="Check all jobs now">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </button>
+        <button class="btn btn-icon hidden" id="openTabBtn" type="button" title="Open in a full tab">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
+        </button>
+      </div>
+    </nav>
+
+    <section class="pane active" id="pane-jobs">
+      <!-- Two slides in one pane. Clicking a row moves right to the second:
+           the list goes away and that one job fills the width. Only ever one
+           of them is in the document's flow — see .slides in dashboard.css. -->
+      <div class="slides" id="jobSlides">
+      <div class="slide slide-list">
+      <!-- All + one per group + the add control. Built by renderSubTabs. -->
+      <div class="subtabs" id="jobSubtabs"></div>
+
+      <div class="toolbar">
+        <button type="button" class="btn btn-outline" id="addJobBtn">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Add Job
+        </button>
+        <div class="toolbar-spacer"></div>
+        <button type="button" class="btn btn-ghost btn-sm hidden" id="dismissAllBtn">
+          Dismiss all alerts
+        </button>
+      </div>
+
+      <div class="add-form hidden" id="addForm">
+        <div class="af-grid af-grid-two">
+          <div class="form-field">
+            <label class="field-label" for="nameInput">Name <span class="af-opt">(optional)</span></label>
+            <input
+              id="nameInput"
+              type="text"
+              class="field-input"
+              placeholder="e.g. Acme — React contract"
+              maxlength="200"
+              spellcheck="true"
+            />
+          </div>
+          <div class="form-field">
+            <label class="field-label" for="urlInput">Upwork job URL <span class="af-req">*</span></label>
+            <input
+              id="urlInput"
+              type="url"
+              class="field-input"
+              placeholder="https://www.upwork.com/jobs/~0123… or ~02abc…"
+              spellcheck="false"
+            />
+            <span class="form-hint" id="formError"></span>
+          </div>
+        </div>
+        <div class="af-actions">
+          <button type="button" class="btn btn-ghost" id="cancelBtn">Cancel</button>
+          <button type="button" class="btn btn-primary" id="saveJobBtn">Add job</button>
+        </div>
+      </div>
+
+      <!-- Filled by renderTagFilterBar when a tag chip is clicked. -->
+      <div class="tag-filter-bar hidden" id="tagFilterBar"></div>
+
+      <div class="table-scroll" id="jobsScroll">
+        <table class="data-table" id="jobsTable">
+          <thead>
+            <tr>
+              <th class="th-drag" title="Drag a row by its grip to reorder."></th>
+              <th class="th-job">Job</th>
+              <th class="th-num th-props" title="GraphQL: opening.clientActivity.totalApplicants">Proposals</th>
+              <th class="th-seen" title="GraphQL: opening.clientActivity.lastBuyerActivity">Last client activity</th>
+              <th class="th-pay" title="GraphQL: buyerExtra.isPaymentMethodVerified">Payment</th>
+              <th class="th-num" title="GraphQL: opening.clientActivity.totalInvitedToInterview">Interviewing</th>
+              <th class="th-num" title="GraphQL: opening.clientActivity.invitationsSent">Invites sent</th>
+              <th class="th-num" title="GraphQL: opening.clientActivity.unansweredInvites">Unanswered</th>
+              <th class="th-num th-hired" title="GraphQL: opening.clientActivity.totalHired">Hired</th>
+              <th class="th-checked" title="When this extension last checked the job">Last checked</th>
+              <th class="th-actions"></th>
+            </tr>
+          </thead>
+          <tbody id="jobsBody"></tbody>
+        </table>
+
+        <div class="empty-state" id="emptyJobs">
+          <div class="empty-icon">&#128203;</div>
+          <p class="empty-title" id="emptyTitle">No jobs tracked yet</p>
+          <p class="empty-hint" id="emptyHint">Click <strong>+ Add Job</strong> and paste an Upwork job URL to start monitoring.</p>
+        </div>
+      </div>
+      </div><!-- /.slide-list -->
+
+      <!-- Slide two: one job in full. Built by renderJobDetail. -->
+      <div class="slide slide-detail" id="jobDetail"></div>
+      </div><!-- /.slides -->
+    </section>
+
+    <section class="pane" id="pane-log">
+      <div class="toolbar">
+        <span class="label-sm muted-sm">Client view &amp; invite events</span>
+        <div class="toolbar-spacer"></div>
+        <button type="button" class="btn btn-ghost btn-sm" id="clearLogBtn">Clear log</button>
+      </div>
+
+      <div class="log-wrap">
+        <ul class="log-list" id="logList"></ul>
+
+        <div class="empty-state" id="emptyLog">
+          <div class="empty-icon">&#128276;</div>
+          <p class="empty-title">No activity yet</p>
+          <p class="empty-hint">Changes to tracked jobs will appear here automatically.</p>
+        </div>
+      </div>
+    </section>
+    <section class="pane" id="pane-lookup">
+      <div class="lookup-card">
+        <p class="lookup-intro">
+          Check any job without tracking it. Uses your Upwork login cookie — you only
+          need to be signed in to upwork.com, no tab has to be open.
+        </p>
+
+        <label class="field-label" for="lookupInput">Job URL or ID</label>
+        <input
+          id="lookupInput"
+          type="text"
+          class="field-input"
+          placeholder="https://www.upwork.com/jobs/~0123… or ~02abc…"
+          spellcheck="false"
+        />
+
+        <div class="lookup-actions">
+          <button type="button" class="btn btn-primary" id="lookupBtn">Fetch details</button>
+          <button type="button" class="btn btn-ghost" id="lookupActivityBtn">Activity only</button>
+          <button type="button" class="btn btn-outline hidden" id="lookupTrackBtn">
+            + Track this job
+          </button>
+        </div>
+
+        <p class="form-hint" id="lookupStatus" aria-live="polite"></p>
+      </div>
+
+      <div id="lookupResult" class="lookup-result hidden"></div>
+    </section>
+
+    <section class="pane" id="pane-settings">
+      <div class="set-card">
+        <div class="set-head">
+          <h2 class="set-title">Notifications</h2>
+          <p class="set-note">Changes apply immediately.</p>
+        </div>
+
+        <label class="set-row is-master">
+          <span class="set-text">
+            <span class="set-name">Desktop notifications</span>
+            <span class="set-desc">Master switch — off silences every popup</span>
+          </span>
+          <input type="checkbox" data-setting="notifyEnabled" />
+          <span class="switch" aria-hidden="true"></span>
+        </label>
+
+        <div class="set-group" id="notifyGroup">
+          <div class="set-group-label">Notify me when</div>
+
+          <label class="set-row">
+            <span class="set-text">
+              <span class="set-name">Client viewed</span>
+              <span class="set-desc">The client opened the job again</span>
+            </span>
+            <input type="checkbox" data-notify="lastViewed" />
+            <span class="switch" aria-hidden="true"></span>
+          </label>
+
+          <label class="set-row">
+            <span class="set-text">
+              <span class="set-name">Interviewing increased</span>
+              <span class="set-desc">Someone was moved to interview</span>
+            </span>
+            <input type="checkbox" data-notify="interviewing" />
+            <span class="switch" aria-hidden="true"></span>
+          </label>
+
+          <label class="set-row">
+            <span class="set-text">
+              <span class="set-name">Invites increased</span>
+              <span class="set-desc">The client invited another freelancer</span>
+            </span>
+            <input type="checkbox" data-notify="invitesSent" />
+            <span class="switch" aria-hidden="true"></span>
+          </label>
+
+          <label class="set-row">
+            <span class="set-text">
+              <span class="set-name">Hired changed</span>
+              <span class="set-desc">A hire was made or withdrawn</span>
+            </span>
+            <input type="checkbox" data-notify="hires" />
+            <span class="switch" aria-hidden="true"></span>
+          </label>
+
+          <label class="set-row">
+            <span class="set-text">
+              <span class="set-name">Payment verification changed</span>
+              <span class="set-desc">The client gained or lost verification</span>
+            </span>
+            <input type="checkbox" data-notify="paymentVerified" />
+            <span class="switch" aria-hidden="true"></span>
+          </label>
+
+          <label class="set-row">
+            <span class="set-text">
+              <span class="set-name">Proposals increased</span>
+              <span class="set-desc">Frequent on an active job</span>
+            </span>
+            <input type="checkbox" data-notify="proposals" />
+            <span class="switch" aria-hidden="true"></span>
+          </label>
+
+          <label class="set-row">
+            <span class="set-text">
+              <span class="set-name">Unanswered invites changed</span>
+              <span class="set-desc">Invites the client sent that got no reply</span>
+            </span>
+            <input type="checkbox" data-notify="unansweredInvites" />
+            <span class="switch" aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <div class="set-group">
+          <div class="set-group-label">Connection</div>
+          <label class="set-row is-stacked">
+            <span class="set-text">
+              <span class="set-name">Upwork sign-in</span>
+              <span class="set-desc">
+                Checks which Upwork session cookie the extension can see. Cookie
+                names only — no token values are shown.
+              </span>
+            </span>
+            <button type="button" class="btn btn-ghost btn-sm set-diag-btn" id="diagBtn">
+              Test connection
+            </button>
+          </label>
+          <pre id="diagOut" class="diag-out hidden"></pre>
+
+          <label class="set-row is-stacked">
+            <span class="set-text">
+              <span class="set-name">Hover card details</span>
+              <span class="set-desc">
+                Runs the full-details request against your first tracked job and
+                reports every attempt — which cookie was used, what Upwork
+                answered. Use this when the hover card says details are
+                unavailable. No token values are shown.
+              </span>
+            </span>
+            <button type="button" class="btn btn-ghost btn-sm set-diag-btn" id="detailsProbeBtn">
+              Diagnose hover card
+            </button>
+          </label>
+          <pre id="detailsProbeOut" class="diag-out hidden"></pre>
+
+          <label class="set-row is-stacked">
+            <span class="set-text">
+              <span class="set-name">Captured Upwork queries</span>
+              <span class="set-desc">
+                The GraphQL requests Upwork's own pages have sent since the browser
+                opened, listed by alias with their query. To find out how to read
+                something this extension does not show yet — a hired freelancer's
+                profile, say — open that page on upwork.com, press Show, and copy
+                the output. Kept in memory only and cleared when the browser closes;
+                never sent anywhere.
+              </span>
+            </span>
+            <span class="set-actions">
+              <button type="button" class="btn btn-ghost btn-sm set-diag-btn" id="capturedBtn">Show captured</button>
+              <button type="button" class="btn btn-ghost btn-sm set-diag-btn" id="capturedCopyBtn">Copy</button>
+              <button type="button" class="btn btn-ghost btn-sm set-diag-btn" id="capturedClearBtn">Clear</button>
+            </span>
+          </label>
+          <pre id="capturedOut" class="diag-out hidden"></pre>
+
+          <label class="set-row is-stacked">
+            <span class="set-text">
+              <span class="set-name">Hired freelancer's profile</span>
+              <span class="set-desc">
+                Why a hired freelancer shows no country or rate beside their name.
+                Fetches one profile page fresh — the first freelancer in any tracked
+                job's history — and reports what came back: a profile, a login
+                redirect, a Cloudflare challenge, or a page with nothing readable in
+                its markup. Also lists any GraphQL request Upwork's own profile page
+                has been seen to send.
+              </span>
+            </span>
+            <button type="button" class="btn btn-ghost btn-sm set-diag-btn" id="profileProbeBtn">
+              Diagnose profile lookup
+            </button>
+          </label>
+          <pre id="profileProbeOut" class="diag-out hidden"></pre>
+
+          <label class="set-row is-stacked">
+            <span class="set-text">
+              <span class="set-name">Job fields</span>
+              <span class="set-desc">
+                Asks Upwork's endpoint what its job-terms fields are really
+                called, so price and duration can be read correctly. Takes a few
+                seconds. Copy the output if it needs reporting.
+              </span>
+            </span>
+            <button type="button" class="btn btn-ghost btn-sm set-diag-btn" id="probeBtn">
+              Probe job fields
+            </button>
+          </label>
+          <pre id="probeOut" class="diag-out hidden"></pre>
+        </div>
+
+        <div class="set-group">
+          <div class="set-group-label">Frequency</div>
+          <label class="set-row is-stacked">
+            <span class="set-text">
+              <span class="set-name">Minimum gap between popups</span>
+              <span class="set-desc" id="throttleDesc"></span>
+            </span>
+            <select class="field-input set-select" id="throttleSelect">
+              <option value="0">Off — notify on every event</option>
+              <option value="10000">10 seconds</option>
+              <option value="30000">30 seconds</option>
+              <option value="120000">2 minutes</option>
+              <option value="300000">5 minutes</option>
+            </select>
+          </label>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- The job detail card shown on hover: description, skills, terms, live
+       activity, the client's profile and what the client requires. One shared
+       node, positioned fixed, so it is never clipped by a scroll container or
+       card boundary. Not role="tooltip" — it scrolls, its text selects and its
+       description expands, so the pointer is meant to reach it. -->
+  <div id="clientPop" class="client-pop" aria-label="Job details"></div>
+
+  <!-- Proposal draft editor -->
+  <dialog id="draftModal" class="modal">
+    <div class="modal-inner">
+      <header class="modal-head">
+        <div class="modal-titles">
+          <div class="modal-title" id="draftJobName">Proposal</div>
+          <div class="modal-sub">Title, tag and proposal — saved locally, never sent anywhere</div>
+        </div>
+        <button type="button" class="btn btn-icon" id="draftCloseBtn" title="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+
+      <!-- One short control needs no line of its own: the label sits beside
+           the dropdown, and the two text fields below share the next line. -->
+      <div class="draft-field draft-inline">
+        <label class="field-label" for="draftGroup">Tab</label>
+        <select id="draftGroup" class="field-input"></select>
+      </div>
+
+      <div class="draft-field draft-pair">
+        <div class="draft-col">
+          <label class="field-label" for="draftTag">Tag</label>
+          <input
+            type="text"
+            id="draftTag"
+            class="field-input"
+            placeholder="e.g. automation"
+            maxlength="24"
+            autocomplete="off"
+            spellcheck="false"
+            list="draftTagOptions"
+          />
+          <!-- Tags already in use, so the same one is reused rather than
+               retyped slightly differently. Filled in openDraft. -->
+          <datalist id="draftTagOptions"></datalist>
+        </div>
+
+        <div class="draft-col">
+          <label class="field-label" for="draftName">Title</label>
+          <input
+            type="text"
+            id="draftName"
+            class="field-input"
+            placeholder="Job title"
+            maxlength="200"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+      </div>
+
+      <!-- The palette is one full-width strip: swatches at the left, the live
+           chip at the right end of the same box, so picking a colour and
+           seeing the result never means looking in two places. -->
+      <div class="draft-field tag-panel">
+        <!-- Filled from TAG_COLORS in dashboard.js, so the palette is
+             declared in exactly one place. -->
+        <div
+          class="tag-swatches"
+          id="draftTagColors"
+          role="radiogroup"
+          aria-label="Tag colour"
+        ></div>
+        <!-- Shows the chip exactly as the row will render it. -->
+        <div class="tag-preview" id="draftTagPreview"></div>
+      </div>
+
+      <label class="field-label draft-label" for="draftText">Proposal</label>
+
+      <textarea
+        id="draftText"
+        class="draft-text"
+        placeholder="Write your proposal here…"
+        spellcheck="true"
+      ></textarea>
+
+      <footer class="modal-foot">
+        <span class="draft-meta" id="draftMeta"></span>
+        <span class="toolbar-spacer"></span>
+        <button type="button" class="btn btn-ghost" id="draftCopyBtn">Copy</button>
+        <button type="button" class="btn btn-primary" id="draftSaveBtn">Done</button>
+      </footer>
+    </div>
+  </dialog>
+
+  <!-- Confirm a destructive action -->
+  <dialog id="confirmModal" class="modal modal-sm">
+    <div class="modal-inner">
+      <header class="modal-head">
+        <div class="modal-titles">
+          <div class="modal-title" id="confirmTitle">Remove job?</div>
+        </div>
+      </header>
+
+      <p class="modal-body" id="confirmText"></p>
+
+      <footer class="modal-foot">
+        <span class="toolbar-spacer"></span>
+        <button type="button" class="btn btn-ghost" id="confirmCancelBtn">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmOkBtn">Remove</button>
+      </footer>
+    </div>
+  </dialog>
+
+  <script src="api.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

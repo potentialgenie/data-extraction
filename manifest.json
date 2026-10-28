@@ -1,0 +1,54 @@
+{
+  "manifest_version": 3,
+  "name": "Upwork Job Info (Simple)",
+  "version": "1.16.0",
+  "description": "Shows extra Upwork job stats on search pages, tracks specific jobs for client-activity changes, and shows the full job details on hover.",
+  "permissions": [
+    "storage",
+    "scripting",
+    "activeTab",
+    "cookies",
+    "alarms",
+    "sidePanel",
+    "notifications",
+    "webRequest"
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "host_permissions": [
+    "https://www.upwork.com/*",
+    "https://upwork.com/*",
+    "https://*.upwork.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_ui": {
+    "page": "dashboard.html",
+    "open_in_tab": true
+  },
+  "side_panel": {
+    "default_path": "dashboard.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.upwork.com/nx/search/jobs/*"
+      ],
+      "js": ["api.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Upwork Job Info",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  }
+}

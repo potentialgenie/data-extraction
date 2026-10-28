@@ -1,0 +1,2950 @@
+/* ══════════════ Tab row ══════════════ */
+
+/*
+ * The topmost thing on the page now that the header is gone, so it pins to the
+ * window. Opaque, or rows would show through it as they pass beneath.
+ */
+.db-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 9;
+  padding-top: var(--s-4);
+  background: var(--bg);
+}
+
+/* A failing check or a failed cycle — the tooltip says which. */
+.btn-icon.is-error {
+  color: var(--danger);
+}
+
+/*
+ * Check-now and open-in-a-tab, at the far end of the tab row.
+ *
+ * Positioned rather than left in the flow, for one reason: in the flow they
+ * are the tallest thing in the row, so they set its height, which moves the
+ * labels they are meant to line up with — every margin that corrected the
+ * offset also changed it.
+ *
+ * The insets are the row's own paddings, which makes this box exactly the band
+ * the labels occupy; centring inside it then needs no magic number. (They are
+ * the paddings of this same element: nav.tabs and nav.db-tabs are one node.)
+ */
+.tabs-actions {
+  position: absolute;
+  right: 0;
+  top: var(--s-4);
+  bottom: var(--s-3);
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+
+.label-sm {
+  font-size: var(--fs-xs);
+}
+
+.muted-sm {
+  color: var(--text-3);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* ══════════════ Buttons ══════════════ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 var(--s-3);
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  background: none;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 140ms var(--ease), color 140ms var(--ease),
+    border-color 140ms var(--ease);
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #06130c;
+  font-weight: 600;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-dim);
+  color: #06130c;
+}
+
+.btn-outline,
+.btn-ghost {
+  border-color: var(--line-strong);
+}
+
+/* Destructive confirm. Red as a fill, not just as text — this is the one place
+   the action itself is the warning. */
+.btn-danger {
+  background: var(--danger-soft);
+  border-color: var(--danger-line);
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--danger);
+  color: #1c0605;
+}
+
+.btn-sm {
+  height: 26px;
+  padding: 0 10px;
+  font-size: var(--fs-xs);
+}
+
+.btn-icon {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  flex-shrink: 0;
+  border-radius: var(--r-sm);
+  color: var(--text-3);
+}
+
+.btn-icon svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.btn-icon.spinning svg {
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ══════════════ Page & tabs ══════════════ */
+
+/* Full width — no centred container. The jobs table is the point of this page
+   and it should use the whole window. */
+.db-page {
+  /* No padding-top: .db-tabs supplies it and must sit flush under the header. */
+  padding: 0 var(--s-5) var(--s-5);
+}
+
+/* Underline tabs — lighter than filled pills, and the indicator is the accent. */
+.tabs {
+  position: relative;
+  display: flex;
+  gap: var(--s-5);
+  /* Room for the buttons pinned to the right edge, so a tab label can never
+     slide underneath them. */
+  padding-right: 72px;
+  margin-bottom: var(--s-5);
+  border-bottom: 1px solid var(--line);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 0 var(--s-3);
+  border: none;
+  border-bottom: 1px solid transparent;
+  margin-bottom: -1px;
+  background: none;
+  font-size: var(--fs-md);
+  font-weight: 500;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: color 140ms var(--ease), border-color 140ms var(--ease);
+}
+
+.tab:hover {
+  color: var(--text-2);
+}
+
+.tab.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+.tab-badge {
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.tab.active .tab-badge {
+  color: var(--accent);
+}
+
+/* ══════════════ Job sub-tabs ══════════════ */
+
+.subtabs {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  padding-bottom: var(--s-3);
+  margin-bottom: var(--s-2);
+  /*
+   * Sticky under the main tabs, which are themselves sticky under the header.
+   * Two reasons: the tab you are in stays legible down a long list, and — the
+   * one that matters — a drop target you have scrolled past cannot be dropped
+   * on. --tabs-h is measured at runtime, since that row wraps when narrow.
+   */
+  position: sticky;
+  top: var(--tabs-h, 46px);
+  z-index: 8;
+  background: var(--bg);
+}
+
+/*
+ * The tabs are held in one trough rather than floating free: they are a set of
+ * alternatives, and a segmented block says that in a way a row of loose pills
+ * does not. It also keeps them plainly subordinate to the underlined tabs
+ * above, which is the job this row has.
+ */
+/*
+ * One row that scrolls sideways, never a wrapping block. Nine tabs in a side
+ * panel wrapped to three rows and put 90px of chrome above the first job;
+ * scrolling keeps the strip 28px tall however many tabs there are.
+ */
+.subtab-group {
+  display: flex;
+  flex-wrap: nowrap;
+  flex: 0 1 auto;
+  min-width: 0;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+
+/* Thinner than the page's 8px bar, which would crowd a 28px strip. */
+.subtab-group::-webkit-scrollbar {
+  height: 4px;
+}
+
+.subtab-group::-webkit-scrollbar-track {
+  background: none;
+}
+
+.subtab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  height: 24px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--text-3);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 140ms var(--ease), background 140ms var(--ease);
+}
+
+.subtab:hover {
+  color: var(--text-2);
+}
+
+/* Lifted out of the trough on surface lightness alone — no accent tint. The
+   accent means "live data" everywhere else in this UI, and which tab you are
+   on is not data. */
+.subtab.active {
+  background: var(--surface-3);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Inset, because the page-wide focus ring would be clipped by the trough. */
+.subtab:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.subtab-badge {
+  font-size: var(--fs-2xs);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.subtab.active .subtab-badge {
+  color: var(--text-2);
+}
+
+/* Only on the active tab — see renderSubTabs. */
+.subtab-x {
+  margin-right: -3px;
+  padding: 0 2px;
+  color: var(--text-3);
+  font-size: var(--fs-md);
+  line-height: 1;
+}
+
+.subtab-x:hover {
+  color: var(--danger);
+}
+
+/* Outside the trough: making a new tab is not one of the places to be. */
+.subtab-add {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--text-3);
+  font-size: var(--fs-md);
+  line-height: 1;
+  cursor: pointer;
+  transition: color 140ms var(--ease), background 140ms var(--ease),
+    border-color 140ms var(--ease);
+}
+
+.subtab-add:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/*
+ * Only while a row is actually being dragged: a dashed edge on every tab says
+ * "these will take it", and the one under the pointer fills in. Outline rather
+ * than a border, so nothing shifts by a pixel when it appears.
+ */
+.subtabs.can-drop .subtab {
+  outline: 1px dashed var(--line-strong);
+  outline-offset: -2px;
+}
+
+.subtab.is-drop {
+  outline: 1px dashed var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.subtab.is-drop .subtab-badge {
+  color: var(--accent);
+}
+
+/* Takes the place of the tab being named, so the new name appears where the
+   tab will be rather than in a dialog elsewhere. */
+.subtab-input {
+  width: 124px;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--accent-line);
+  border-radius: 4px;
+  background: var(--surface-3);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+}
+
+.subtab-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.pane {
+  display: none;
+}
+
+.pane.active {
+  display: block;
+  animation: fade 200ms var(--ease);
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-bottom: var(--s-4);
+}
+
+.toolbar-spacer {
+  flex: 1;
+}
+
+/* ══════════════ Add form ══════════════ */
+
+/* The table goes full width; a text input has no reason to be 900px wide. */
+.add-form {
+  max-width: 720px;
+  margin-bottom: var(--s-4);
+  padding: var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  animation: fade 180ms var(--ease);
+}
+
+.af-grid {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.af-grid-two {
+  grid-template-columns: 1fr 1fr;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.af-opt {
+  color: var(--text-3);
+}
+
+.af-req {
+  color: var(--danger);
+}
+
+.field-input {
+  width: 100%;
+  height: 34px;
+  padding: 0 var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-md);
+  transition: border-color 140ms var(--ease), background 140ms var(--ease);
+}
+
+.field-input::placeholder {
+  color: var(--text-3);
+}
+
+.field-input:hover {
+  border-color: var(--line-strong);
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: var(--accent-line);
+  background: var(--surface-3);
+}
+
+.form-hint {
+  display: block;
+  min-height: 15px;
+  margin-top: 5px;
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+}
+
+.form-hint.error {
+  color: var(--danger);
+}
+
+.af-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s-2);
+  margin-top: var(--s-3);
+}
+
+/* ══════════════ Jobs table ══════════════ */
+
+/*
+ * No horizontal scrolling. `overflow-x: auto` also silently forces overflow-y
+ * to auto, which is what used to clip the delta badge out of the row — so
+ * visible is the correct value here for two separate reasons.
+ */
+.table-scroll {
+  overflow-x: visible;
+}
+
+/*
+ * Fixed layout so the table always fits its container instead of being pushed
+ * wide by its content: every column below gets a fixed budget and the Job
+ * column absorbs whatever is left.
+ */
+.data-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
+
+/*
+ * Column budget, sized to each header's own text — the values are all shorter
+ * than their labels. "Last client activity" and "Payment" carry extra room for
+ * a struck-through previous value while a change marker is showing.
+ *
+ * Everything here is fixed so the Job column below can take all remaining
+ * width, which on a wide window is most of it.
+ */
+.th-seen {
+  width: 140px;
+}
+
+.th-pay {
+  width: 108px;
+}
+
+.th-checked {
+  width: 96px;
+}
+
+.data-table th.th-num {
+  width: 96px;
+}
+
+.data-table th.th-props {
+  width: 84px;
+}
+
+.th-num.th-hired {
+  width: 68px;
+}
+
+/* Absorbs every pixel the fixed columns above do not claim. */
+.th-job {
+  width: auto;
+}
+
+.data-table th {
+  padding: 0 var(--s-3) var(--s-2);
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--text-3);
+}
+
+.data-table td {
+  position: relative;
+  padding: var(--s-3);
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+  vertical-align: middle;
+}
+
+.data-table tbody tr {
+  transition: background 140ms var(--ease);
+  /* The whole row opens that job's detail slide — the hover tint alone does
+     not say "clickable" when every other tint in this table is just a hover. */
+  cursor: pointer;
+}
+
+/* The parts that kept a gesture of their own, so the pointer stops promising
+   the row's one. */
+.data-table tbody tr a,
+.data-table tbody tr button,
+.data-table tbody tr [data-ring-id] {
+  cursor: pointer;
+}
+
+.data-table tbody tr .drag-handle {
+  cursor: grab;
+}
+
+.data-table tbody tr:hover td {
+  background: var(--surface);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.th-num,
+.data-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.th-actions {
+  width: 176px;
+}
+
+.cell-actions {
+  text-align: right;
+}
+
+.cell-actions .btn + .btn {
+  margin-left: var(--s-1);
+}
+
+/* Tag then title on one row; the title takes whatever the tag leaves. */
+.job-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-width: 0;
+}
+
+.job-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 140ms var(--ease);
+}
+
+.job-name:hover {
+  color: var(--accent);
+}
+
+/*
+ * Sits directly after the title text ends. Faint at rest so a column of them
+ * never competes with the titles, brighter once the row is under the pointer,
+ * and accented while it is the target itself.
+ */
+.job-copy-link {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--text-3);
+  opacity: 0.35;
+  cursor: pointer;
+  transition:
+    opacity 140ms var(--ease),
+    color 140ms var(--ease),
+    background 140ms var(--ease);
+}
+
+#jobsTable tr:hover .job-copy-link {
+  opacity: 0.7;
+}
+
+.job-copy-link:hover,
+.job-copy-link:focus-visible {
+  opacity: 1;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.job-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+  white-space: normal;
+}
+
+.job-sub.error {
+  color: var(--danger);
+}
+
+.alert-clear {
+  color: var(--danger);
+  border-color: var(--danger-line);
+}
+
+.alert-clear:hover:not(:disabled) {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* Alerted row is marked by a single accent rule, not a coloured box. */
+.alert-row td:first-child {
+  box-shadow: inset 2px 0 0 var(--danger);
+}
+
+/* ══════════════ Change markers ══════════════ */
+
+.was {
+  margin-right: 3px;
+  color: var(--text-3);
+  text-decoration: line-through;
+  font-weight: 400;
+}
+
+.was-alert {
+  color: rgba(239, 115, 112, 0.6);
+}
+
+.now {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.now-alert {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.delta-badge {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  padding: 1px 6px;
+  border-radius: var(--r-full);
+  background: var(--accent);
+  color: #06130c;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  line-height: 1.5;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: deltaPop 2600ms var(--ease) forwards;
+}
+
+.alert-row .delta-badge {
+  background: var(--danger);
+  color: #1c0605;
+}
+
+.metric .delta-badge {
+  top: auto;
+  right: auto;
+  left: -3px;
+  bottom: 100%;
+}
+
+@keyframes deltaPop {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  10%,
+  72% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/* ══════════════ Payment badge ══════════════ */
+
+.pill,
+.pay-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: var(--r-full);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pill-verified,
+.pay-badge.is-ok {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.pill-unverified,
+.pay-badge.is-bad {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* ══════════════ Row actions ══════════════ */
+
+.btn-xs {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: var(--r-sm);
+  color: var(--text-3);
+}
+
+.cell-actions .btn-xs + .btn-xs {
+  margin-left: 2px;
+}
+
+.btn-xs:hover:not(:disabled) {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.btn-xs:disabled {
+  opacity: 0.3;
+}
+
+.btn-xs.is-remove:hover:not(:disabled) {
+  color: var(--danger);
+}
+
+/* Applied is a state, so it stays lit rather than only reacting to hover. */
+.btn-xs.is-on {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* ══════════════ Tags ══════════════ */
+
+/* Directly above the table, because it describes what the table is showing. */
+.tag-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-bottom: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+}
+
+.filter-lead {
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+
+.tag-filter-bar .btn {
+  margin-left: auto;
+}
+
+
+/*
+ * One pair of variables per hue: the text colour, and the same hue behind it.
+ * Both are pitched bright — a tag is something the user chose to put there, so
+ * it reads as lit rather than as muted metadata. Every hue is held at the same
+ * lightness so no one tag shouts louder than another, and the order below is
+ * the swatch order — see TAG_COLORS.
+ */
+.c-slate {
+  --tag-fg: #b9bcc4;
+  --tag-bg: rgba(185, 188, 196, 0.26);
+}
+
+.c-brown {
+  --tag-fg: #c08f68;
+  --tag-bg: rgba(192, 143, 104, 0.26);
+}
+
+/* Close to --danger by nature; the alert colour is the same family. */
+.c-red {
+  --tag-fg: #f18a86;
+  --tag-bg: rgba(241, 138, 134, 0.26);
+}
+
+.c-orange {
+  --tag-fg: #f0a15e;
+  --tag-bg: rgba(240, 161, 94, 0.26);
+}
+
+/* Pitched yellow rather than true amber, so it cannot be mistaken for the
+   orange beside it. */
+.c-amber {
+  --tag-fg: #e6c85c;
+  --tag-bg: rgba(230, 200, 92, 0.26);
+}
+
+.c-emerald {
+  --tag-fg: #4fd694;
+  --tag-bg: rgba(79, 214, 148, 0.26);
+}
+
+.c-teal {
+  --tag-fg: #55d3c6;
+  --tag-bg: rgba(85, 211, 198, 0.26);
+}
+
+.c-sky {
+  --tag-fg: #78c1f2;
+  --tag-bg: rgba(120, 193, 242, 0.26);
+}
+
+.c-indigo {
+  --tag-fg: #a1aefa;
+  --tag-bg: rgba(161, 174, 250, 0.26);
+}
+
+.c-violet {
+  --tag-fg: #c3a2f2;
+  --tag-bg: rgba(195, 162, 242, 0.26);
+}
+
+.c-pink {
+  --tag-fg: #f194c8;
+  --tag-bg: rgba(241, 148, 200, 0.26);
+}
+
+/* Never shrinks: the title beside it ellipsises instead (see jobCell). */
+.tag-chip {
+  flex-shrink: 0;
+  max-width: 96px;
+  overflow: hidden;
+  padding: 1px 7px;
+  border: 0;
+  border-radius: var(--r-full);
+  background: var(--tag-bg);
+  color: var(--tag-fg);
+  font: inherit;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Only the row's chip is a control — it filters the list to its own tag. */
+button.tag-chip {
+  cursor: pointer;
+  transition: filter 140ms var(--ease);
+}
+
+button.tag-chip:hover {
+  filter: brightness(1.25);
+}
+
+/*
+ * A fixed gutter, so every title in the table starts at the same x whether or
+ * not its row is tagged — a ragged left edge costs more in scanning than the
+ * gutter costs in width. Only present when something is tagged, and only in
+ * the table layout; the card layout reverts to flow further down.
+ */
+#jobsTable.has-tags .job-head {
+  display: grid;
+  /* Third track is slack, not content: it lets the title track shrink to the
+     ellipsis while the icon stays pinned to where that title ends. */
+  grid-template-columns: 96px auto 1fr;
+}
+
+#jobsTable.has-tags .job-head .tag-chip {
+  grid-column: 1;
+  justify-self: end;
+}
+
+#jobsTable.has-tags .job-head .job-name {
+  grid-column: 2;
+}
+
+#jobsTable.has-tags .job-head .job-copy-link {
+  grid-column: 3;
+  justify-self: start;
+}
+
+.applied-tag {
+  padding: 1px 7px;
+  border-radius: var(--r-full);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ══════════════ Signed-out banner ══════════════ */
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin: var(--s-4) 0;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--danger-line);
+  border-radius: var(--r-md);
+  background: var(--danger-soft);
+}
+
+.banner-dot {
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--danger);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.banner-text {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+.banner-text strong {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.banner-btn {
+  flex-shrink: 0;
+  border-color: var(--danger-line);
+  color: var(--danger);
+}
+
+.banner-btn:hover:not(:disabled) {
+  background: rgba(239, 115, 112, 0.18);
+  color: var(--danger);
+}
+
+@media (max-width: 480px) {
+  .banner {
+    flex-wrap: wrap;
+  }
+
+  .banner-btn {
+    width: 100%;
+  }
+}
+
+/* ══════════════ Job slides ══════════════ */
+
+/*
+ * Two slides, one pane: the list, and one job in full. Only the active one is
+ * in the flow — `display: none` rather than a translated track, because a
+ * flex/grid track makes the pane as tall as its TALLEST slide, which leaves a
+ * screenful of dead scroll under whichever one is shorter. The sideways
+ * motion is a short entry animation in JS (slideIn), not a layout.
+ */
+.slide-detail {
+  display: none;
+}
+
+.slides.is-detail .slide-list {
+  display: none;
+}
+
+.slides.is-detail .slide-detail {
+  display: block;
+}
+
+/* ── Slide two: one job in full ── */
+
+.jd-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  padding-bottom: var(--s-3);
+  margin-bottom: var(--s-4);
+  border-bottom: 1px solid var(--line);
+  /*
+   * Sticky directly under the main tab row — the same shelf .subtabs uses on
+   * the other slide, and for a related reason: the back control is the only
+   * way out of here and must not scroll away down a long brief.
+   */
+  position: sticky;
+  top: var(--tabs-h, 46px);
+  z-index: 8;
+  padding-top: var(--s-4);
+  background: var(--bg);
+}
+
+.jd-back {
+  flex: none;
+  /* Optically aligned with the title's first line rather than its box. */
+  margin-top: -3px;
+}
+
+.jd-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.jd-titleline {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.jd-titleline .tag-chip {
+  flex: none;
+  margin-top: 3px;
+}
+
+.jd-title {
+  font-size: var(--fs-lg);
+  font-weight: 550;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.jd-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex: none;
+}
+
+/* The head is three columns of very different widths; below this the actions
+   have nowhere to go but their own line. */
+@media (max-width: 640px) {
+  .jd-head {
+    flex-wrap: wrap;
+  }
+
+  .jd-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+.jd-body > * + * {
+  margin-top: var(--s-4);
+}
+
+/* The brief is what this slide is for, so it is set at reading size rather
+   than at the hover card's glance size. */
+.jd-body .cp-desc {
+  font-size: var(--fs-sm);
+  line-height: 1.65;
+  color: var(--text-2);
+}
+
+.jd-body .cp-row {
+  font-size: var(--fs-sm);
+}
+
+/* ── Screening questions ── */
+
+/*
+ * Numbered, because Upwork numbers them and a proposal answers them in order.
+ * The counter sits in the gutter rather than in the text flow so a question
+ * that wraps stays aligned under itself.
+ */
+.jd-questions {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: jq;
+}
+
+.jd-questions li {
+  position: relative;
+  padding: 4px 0 4px var(--s-5);
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+  color: var(--text-2);
+  counter-increment: jq;
+}
+
+.jd-questions li::before {
+  content: counter(jq);
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: var(--s-4);
+  text-align: right;
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+}
+
+/* ── The client's past hires ── */
+
+.jd-history {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.jh-row {
+  padding: var(--s-2) 0;
+}
+
+.jh-row + .jh-row {
+  border-top: 1px solid var(--line);
+}
+
+/* Name and job title on one line, the title giving way first when narrow. */
+/* Line 1: the name, then the open icon at the far end. */
+.jh-top {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.jh-who {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--fs-sm);
+  font-weight: 550;
+  color: var(--text);
+  /* A hover that carries the profile title should look like it has one. */
+  cursor: default;
+}
+
+.jh-who[title] {
+  text-decoration: underline dotted var(--line-strong);
+  text-underline-offset: 3px;
+}
+
+/* The one link on the line. Same control as the hover card's open icon. */
+.jh-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--r-sm);
+  color: var(--text-3);
+  transition: background 140ms var(--ease), color 140ms var(--ease);
+}
+
+.jh-open:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/* Line 2: the job, on its own line. Clipped rather than wrapped so the rows
+   stay the same height and scan as a list; the full title is in the hover. */
+.jh-job {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 1px;
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+}
+
+/* Line 3: the money. */
+.jh-price {
+  margin-top: 2px;
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* "(India • $10/hr)" — lighter than the name it follows, so the eye lands on
+   the person first and the facts second. */
+.jh-facts {
+  font-weight: 400;
+  color: var(--text-3);
+}
+
+/* The job title links out when it has a public page. Styled as the text it
+   replaces, underlined on hover, so linked and unlinked rows read alike. */
+a.jh-job {
+  color: var(--text-3);
+  text-decoration: none;
+}
+
+a.jh-job:hover {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+}
+
+/* Three small buttons under a settings row. */
+.set-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.jh-meta {
+  margin-top: 1px;
+  font-size: var(--fs-2xs);
+  color: var(--text-3);
+}
+
+/* The client's own words about the last person who did this work. */
+.jh-note {
+  margin: var(--s-1) 0 0;
+  padding-left: var(--s-2);
+  border-left: 1px solid var(--line-strong);
+  font-size: var(--fs-xs);
+  line-height: 1.55;
+  color: var(--text-2);
+  /* Reviews carry paragraph breaks and they change the reading. */
+  white-space: pre-wrap;
+}
+
+/*
+ * The review pointing the other way — the freelancer on the client. Marked in
+ * the accent so the two are never mistaken for each other: one says whether
+ * the work was good, the other says what this client is like to work for.
+ */
+.jh-note.is-inbound {
+  border-left-color: var(--accent-line);
+}
+
+.jh-note-who {
+  display: block;
+  margin-bottom: 1px;
+  font-size: var(--fs-2xs);
+  color: var(--text-3);
+}
+
+.jd-state {
+  padding-top: var(--s-2);
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-2xs);
+}
+
+/* ══════════════ Job detail card (hover) ══════════════ */
+
+/*
+ * Three bands: a fixed header, a scrolling body, a fixed footer. The header
+ * carries what identifies the job, so it stays put however far into a long
+ * description the reader has scrolled.
+ */
+.client-pop {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  /*
+   * Wide enough for Job and Client to sit side by side and still read. Never
+   * wider than the window, though — at side-panel widths it shrinks rather
+   * than being clipped by the edge-clamp in positionClientPop, and the two
+   * columns hold (see the @container rule) down to a card of 300px.
+   */
+  width: min(680px, calc(100vw - var(--s-4)));
+  /* Makes the card queryable by its own width — see the @container rule that
+     decides whether Job and Client sit side by side. */
+  container-type: inline-size;
+  max-height: min(600px, calc(100vh - var(--s-5)));
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--surface-3);
+  box-shadow: var(--shadow);
+  /*
+   * Interactive, unlike a plain tooltip: the body scrolls, the description
+   * expands and the text can be selected, all of which need the pointer to be
+   * able to reach it. Dismissal is handled in JS instead — see the delegated
+   * mouseover listener in dashboard.js.
+   */
+  pointer-events: auto;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 120ms var(--ease);
+}
+
+.client-pop.is-shown {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ── Header ── */
+
+.cp-titleline {
+  display: flex;
+  /* Top, not centre: a title that wraps to two lines would otherwise drag the
+     tag chip down beside its second line. */
+  align-items: flex-start;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.cp-titleline .tag-chip {
+  flex: none;
+  margin-top: 1px;
+}
+
+.cp-title {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-md);
+  font-weight: 550;
+  line-height: 1.35;
+  color: var(--text);
+}
+
+.cp-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+  margin-top: var(--s-2);
+}
+
+.cp-badge {
+  padding: 1px 6px;
+  border-radius: var(--r-sm);
+  font-size: var(--fs-2xs);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.cp-badge.is-accent {
+  border: 1px solid var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.cp-badge.is-warn {
+  border: 1px solid var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.cp-badge.is-plain {
+  border: 1px solid var(--line-strong);
+  color: var(--text-2);
+}
+
+/* Category group › category › occupation. */
+.cp-crumbs {
+  margin-top: var(--s-2);
+  font-size: var(--fs-2xs);
+  color: var(--text-3);
+}
+
+/* The terms Upwork prints above a job description, in the same order. */
+.cp-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+  margin-top: var(--s-2);
+}
+
+.cp-pill {
+  padding: 2px 7px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-full);
+  background: var(--surface-2);
+  font-size: var(--fs-2xs);
+  color: var(--text-2);
+}
+
+/* The rate — the one number the eye goes to first. */
+.cp-pill.is-rate {
+  border-color: var(--accent-line);
+  color: var(--accent);
+}
+
+/* ── Body ── */
+
+.cp-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--s-3);
+}
+
+.cp-sec {
+  min-width: 0;
+}
+
+/* Every band in the body is separated the same way, whether it is a section or
+   a pair of columns. Direct children only — a section used AS a column inside
+   .cp-cols must not push itself down. */
+.cp-body > * + * {
+  margin-top: var(--s-3);
+}
+
+.cp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  margin-bottom: var(--s-2);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-3);
+}
+
+/*
+ * Sits in the heading rule, hard right. Deliberately inherits the heading's
+ * size, casing and tracking: it is a label on that rule, not a control bolted
+ * onto it, and only colour separates the two until it is hovered.
+ */
+.cp-copy {
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: color 140ms var(--ease);
+}
+
+.cp-copy:hover {
+  color: var(--accent);
+}
+
+/* Clamped until "Show more" — see descriptionBlock. */
+.cp-desc.is-clamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 8;
+  overflow: hidden;
+}
+
+.cp-more {
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.cp-more:hover {
+  color: var(--text);
+}
+
+/* ── The inline proposal box ── */
+
+.jd-draft {
+  display: block;
+  width: 100%;
+  min-height: 180px;
+  max-height: min(52vh, 480px);
+  padding: var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  /* Vertical only: a textarea dragged wider than its column breaks the slide's
+     layout, and there is nothing to gain from it. */
+  resize: vertical;
+  overflow-y: auto;
+  transition: border-color 140ms var(--ease);
+}
+
+.jd-draft:focus {
+  outline: none;
+  border-color: var(--accent-line);
+}
+
+.jd-draft::placeholder {
+  color: var(--text-3);
+}
+
+.jd-draft-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  margin-top: var(--s-2);
+}
+
+/* Doubles as the save indicator: it only ever moves when the box does. */
+.jd-draft-meta {
+  font-size: var(--fs-2xs);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.cp-desc {
+  margin: 0;
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+  color: var(--text-2);
+  /* The brief is written with paragraph breaks; honouring them is the whole
+     difference between a description and a wall. */
+  white-space: pre-wrap;
+}
+
+.cp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+}
+
+.cp-skill {
+  padding: 2px 7px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  font-size: var(--fs-2xs);
+  color: var(--text-2);
+}
+
+/* The skills the client marked mandatory, told apart without a second legend. */
+.cp-skill.is-must {
+  border-color: var(--line-strong);
+  color: var(--text);
+}
+
+/* Two halves side by side, split by a hairline. */
+.cp-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-3);
+}
+
+/* One column when only one half is there — a lone heading beside a gap reads
+   as something failing to load. */
+.cp-cols:has(> :only-child) {
+  grid-template-columns: 1fr;
+}
+
+.cp-col {
+  min-width: 0;
+}
+
+.cp-cols > * + * {
+  padding-left: var(--s-3);
+  border-left: 1px solid var(--line);
+}
+
+/*
+ * Stacking is decided by how wide the thing HOLDING the columns is, not how
+ * wide the window is. The two disagree here: the hover card is its own fixed
+ * width, so a narrow window was collapsing a card that had plenty of room —
+ * which is why Job and Client kept ending up one above the other in the side
+ * panel. The detail slide, being as wide as the window, genuinely does want
+ * the window's width, and is the one case still asked as a media query.
+ */
+
+/* Threshold deliberately low: two cramped columns in a side panel is what was
+   asked for, and only a truly tiny card gives up and stacks. */
+@container (max-width: 300px) {
+  .cp-cols {
+    grid-template-columns: 1fr;
+  }
+
+  .cp-cols > * + * {
+    padding-left: 0;
+    padding-top: var(--s-3);
+    border-left: none;
+    border-top: 1px solid var(--line);
+  }
+}
+
+@media (max-width: 560px) {
+  .jd-body .cp-cols {
+    grid-template-columns: 1fr;
+  }
+
+  .jd-body .cp-cols > * + * {
+    padding-left: 0;
+    padding-top: var(--s-3);
+    border-left: none;
+    border-top: 1px solid var(--line);
+  }
+}
+
+.cp-empty {
+  padding: 2px 0;
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+}
+
+.cp-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: 2px 0;
+  font-size: var(--fs-xs);
+}
+
+.cp-row span {
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.cp-row strong {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  color: var(--text);
+  font-weight: 500;
+  text-align: right;
+  /* Two columns in a side panel leaves ~170px a side, and an unbroken value
+     like "Europe/Berlin (UTC+02:00)" would otherwise push past the divider. */
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Pass / fail against the client's own requirement — the one thing a public
+   query cannot answer. */
+.cp-mark {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.cp-mark.is-ok {
+  color: var(--accent);
+}
+
+.cp-mark.is-no {
+  color: var(--danger);
+}
+
+/* ── Footer ── */
+
+/* Header band: the job's address and its copy button, above the two columns. */
+.cp-top {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex: none;
+  min-width: 0;
+  padding: 6px var(--s-3);
+  border-bottom: 1px solid var(--line);
+  font-size: var(--fs-2xs);
+}
+
+.cp-foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2px var(--s-3);
+  flex: none;
+  padding: 6px var(--s-3) var(--s-2);
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-2xs);
+}
+
+/*
+ * The address itself is the copy control — a button, but written as the URL
+ * rather than dressed as one. Takes the room the icon does not, and
+ * ellipsises rather than wrapping: a job id is long and none of it is worth a
+ * second line.
+ */
+.cp-link {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.cp-link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+/* Opens the job on Upwork. */
+.cp-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--r-sm);
+  color: var(--text-3);
+  transition: background 140ms var(--ease), color 140ms var(--ease);
+}
+
+.cp-open:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.cp-open svg {
+  display: block;
+}
+
+/* An API error can run to a paragraph; the footer gives it one line and the
+   diagnostic in Settings prints it whole. */
+.cp-state {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+
+.cp-state.is-error {
+  color: var(--danger);
+}
+
+/* Tells the user what clicking the title actually does. */
+.cp-hint {
+  flex: none;
+  margin-left: auto;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+
+/* Signals that the title carries more than a link. */
+.job-name[data-client-id]:hover {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+}
+
+/* ══════════════ Toast ══════════════ */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: var(--s-5);
+  z-index: 40;
+  padding: var(--s-2) var(--s-4);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-full);
+  background: var(--surface-3);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  box-shadow: var(--shadow);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 8px);
+  transition: opacity 180ms var(--ease), transform 180ms var(--ease);
+}
+
+.toast.is-shown {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.toast.is-bad {
+  border-color: var(--danger-line);
+  color: var(--danger);
+}
+
+/* ══════════════ Draft modal ══════════════ */
+
+.modal {
+  width: min(620px, calc(100vw - var(--s-5)));
+  /* Capped so the panel cannot overflow the viewport in a short side panel. */
+  max-height: min(92vh, 760px);
+  padding: 0;
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+/*
+ * Opening animation. Deliberately a keyframe on [open] rather than a
+ * transition out of a hidden resting state: the dialog's own styles keep it
+ * fully visible, so if the animation never runs — reduced motion, an engine
+ * that skips it — the panel still shows. A transition from opacity:0 fails the
+ * other way, and an invisible editor is not a cosmetic bug.
+ *
+ * Only the opening is animated. Closing is immediate, which is what a dismissed
+ * panel should feel like, and it means nothing has to be held in the top layer
+ * after close() to be watched out.
+ */
+.modal[open] {
+  animation: modalIn 180ms var(--ease);
+}
+
+.modal[open]::backdrop {
+  animation: backdropIn 180ms var(--ease);
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+}
+
+@keyframes backdropIn {
+  from {
+    opacity: 0;
+  }
+}
+
+.modal::backdrop {
+  background: rgba(0, 0, 0, 0.62);
+}
+
+/* Confirmations hold one sentence — the editor's width would dwarf it. */
+.modal-sm {
+  width: min(400px, calc(100vw - var(--s-5)));
+}
+
+.modal-body {
+  margin: 0 var(--s-4);
+  font-size: var(--fs-md);
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+.modal-body strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/*
+ * No fixed height here — the dialog sizes to its content (header + textarea +
+ * footer) up to .modal's max-height. That is what lets the textarea grow as
+ * text is typed instead of always filling a fixed leftover space.
+ */
+.modal-inner {
+  display: flex;
+  flex-direction: column;
+  max-height: min(92vh, 760px);
+}
+
+.modal-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  flex-shrink: 0;
+  padding: var(--s-4) var(--s-4) var(--s-3);
+}
+
+.modal-titles {
+  min-width: 0;
+}
+
+.modal-title {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.modal-sub {
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+}
+
+.modal-head .btn-icon {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Sits in the same gutter as the textarea; never squeezed by the flex column. */
+.draft-field {
+  margin: 0 var(--s-4) var(--s-3);
+  flex-shrink: 0;
+}
+
+/* Label beside the control, and the control only as wide as it needs to be —
+   tab names are short, and a full-width select over one word reads as a gap. */
+.draft-inline {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.draft-inline .field-label {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+}
+
+.draft-inline .field-input {
+  flex: 0 1 200px;
+}
+
+/* Tag and Title share a line. A tag is a word and caps at 24 characters, so
+   it takes a fixed slot and the title keeps everything left over. */
+.draft-pair {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: var(--s-3);
+}
+
+/* Lets a long value ellipsise inside the input rather than widening the
+   column and pushing its neighbour off the grid. */
+.draft-col {
+  min-width: 0;
+}
+
+/* Below this the modal is near viewport width, and a fixed 170px tag slot
+   leaves the title too narrow to read what is in it. */
+@media (max-width: 480px) {
+  .draft-pair {
+    grid-template-columns: 1fr;
+  }
+}
+
+.draft-label {
+  margin: 0 var(--s-4) 6px;
+}
+
+/*
+ * The palette reads as one control rather than loose dots on the dialog
+ * background: a full-width box, swatches packed at the left, live chip at the
+ * far end. Bordered like the inputs above it so the three rows sit on the
+ * same grid.
+ */
+.tag-panel {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 38px;
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+}
+
+/* Wraps rather than overflowing, so the palette can grow. */
+.tag-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.swatch {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--tag-fg);
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 140ms var(--ease), box-shadow 140ms var(--ease);
+}
+
+.swatch:hover {
+  opacity: 0.85;
+}
+
+/*
+ * The selected swatch reads as chosen at full strength, ringed in its own hue.
+ * The inner ring is the panel colour, so the outer one looks detached rather
+ * than like a thick border.
+ */
+.swatch.is-on {
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--surface-2), 0 0 0 3px var(--tag-fg);
+}
+
+/* Arrow keys move focus inside the group; it has to be visible where it lands. */
+.swatch:focus-visible {
+  outline: 2px solid var(--accent-line);
+  outline-offset: 2px;
+}
+
+/* Height is held whether or not a chip is in it, so typing the first
+   character does not change the height of the panel around it. */
+.tag-preview {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-height: 21px;
+  margin-left: auto;
+  padding-left: var(--s-2);
+}
+
+/* Nothing typed yet: the chosen colour still shows, on a stand-in word, so the
+   swatches visibly do something before there is a tag to put in them. */
+.tag-preview.is-placeholder {
+  opacity: 0.45;
+}
+
+/*
+ * Height is set from JS to match content (autoGrowDraft), not by flex — a much
+ * bigger starting area than before, and it keeps growing as you type instead
+ * of scrolling internally right away. max-height is the one hard limit: past
+ * it the field scrolls on its own rather than pushing the footer buttons off
+ * the dialog or the dialog off the screen.
+ */
+.draft-text {
+  margin: 0 var(--s-4);
+  flex: 0 1 auto;
+  min-height: 200px;
+  max-height: min(52vh, 480px);
+  padding: var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-md);
+  line-height: 1.6;
+  resize: none;
+  overflow-y: auto;
+  transition: border-color 140ms var(--ease);
+}
+
+.draft-text::placeholder {
+  color: var(--text-3);
+}
+
+.draft-text:focus {
+  outline: none;
+  border-color: var(--accent-line);
+}
+
+.modal-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-shrink: 0;
+  padding: var(--s-3) var(--s-4) var(--s-4);
+}
+
+.draft-meta {
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+}
+
+/* ══════════════ Drag to reorder ══════════════ */
+
+.th-drag,
+.cell-drag {
+  width: 28px;
+  padding: 0 !important;
+}
+
+/* A generous hit target — the grip is small, the grabbable area is not. */
+.drag-handle {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 38px;
+  color: var(--text-3);
+  cursor: grab;
+  user-select: none;
+  opacity: 0.5;
+  transition: opacity 140ms var(--ease), color 140ms var(--ease);
+}
+
+.drag-handle svg {
+  display: block;
+  pointer-events: none; /* so the drag always originates from the handle box */
+}
+
+tr:hover .drag-handle,
+.drag-handle:focus-visible {
+  opacity: 1;
+}
+
+.drag-handle:hover {
+  color: var(--text);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+tr.is-dragging {
+  opacity: 0.4;
+}
+
+tr.drop-before td {
+  box-shadow: inset 0 1px 0 var(--accent);
+}
+
+tr.drop-after td {
+  box-shadow: inset 0 -1px 0 var(--accent);
+}
+
+tr.is-entering {
+  animation: rowEnter 340ms var(--ease);
+}
+
+/* Row arrived at from a clicked notification. */
+tr.is-focused td {
+  background: var(--accent-soft) !important;
+}
+
+#jobsTable tr.is-focused {
+  background: var(--accent-soft);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+@keyframes rowEnter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  tr.is-entering {
+    animation: none;
+  }
+
+  /* The panel is simply there, with no entrance of any kind. */
+  .modal[open],
+  .modal[open]::backdrop {
+    animation: none;
+  }
+}
+
+/* ══════════════ Countdown ring ══════════════ */
+
+.ring {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+}
+
+/* Sits among 26px icon buttons, so it is centred against them and spaced like
+   one — the buttons' own 2px rule only applies between two buttons. */
+.row-ring {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.ring svg {
+  width: 22px;
+  height: 22px;
+  transform: rotate(-90deg);
+}
+
+.ring circle {
+  fill: none;
+  stroke-width: 1.5;
+}
+
+.ring-track {
+  stroke: var(--line-strong);
+}
+
+.ring-fill {
+  stroke: var(--text-3);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.ring-label {
+  position: absolute;
+  font-size: var(--fs-2xs);
+  font-weight: 500;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.ring.is-hot .ring-fill {
+  stroke: var(--accent);
+}
+
+.ring.is-hot .ring-label {
+  color: var(--text-2);
+}
+
+/*
+ * Clickable, so it should say so — twice over now that it sits inside a
+ * cluster of buttons, where a click reads as safe and this one pauses checks.
+ * The box-shadow stands in for padding: the ring is a fixed 22px, and the
+ * matching ground makes the hit target look like the 28px it is.
+ */
+.ring {
+  cursor: pointer;
+}
+
+.ring:hover {
+  border-radius: 50%;
+  background: var(--surface-2);
+  box-shadow: 0 0 0 3px var(--surface-2);
+}
+
+/*
+ * Stopped: the track alone, no progress arc, and a pause glyph — it reads as
+ * "nothing is counting" rather than as a countdown stuck at a number. The ring
+ * carries its own hue so a stopped job is findable in a long list without
+ * reading every label; before, it was the dimmest thing in the row and easy to
+ * lose. Amber, not red: nothing here needs attention, the user asked for it.
+ */
+.ring.is-paused .ring-fill {
+  stroke: transparent;
+  transition: none;
+  animation: none;
+}
+
+/*
+ * Dashed as well as amber. Hue alone would collide with an amber or orange
+ * tag sitting in the same row, and the broken circle says "not running"
+ * without depending on colour at all.
+ */
+.ring.is-paused .ring-track {
+  stroke: var(--paused-line);
+  stroke-dasharray: 3 3.5;
+}
+
+.ring.is-paused .ring-label {
+  color: var(--paused);
+  font-size: var(--fs-xs);
+}
+
+.ring.is-busy .ring-fill {
+  stroke: var(--accent);
+  stroke-dasharray: 12 40;
+  transition: none;
+  /* SVG user units (viewBox is 0 0 24 24), not the 22px rendered size. */
+  transform-origin: 12px 12px;
+  animation: spin 900ms linear infinite;
+}
+
+.alert-row .ring-fill {
+  stroke: var(--danger);
+}
+
+/* ══════════════ Card digest (narrow screens) ══════════════ */
+
+.cell-summary {
+  display: none;
+}
+
+.sum-hero {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 22px;
+}
+
+.hero-dot {
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--text-3);
+}
+
+.hero-dot.tone-hot {
+  background: var(--accent);
+}
+
+.hero-dot.tone-warm {
+  background: var(--text-2);
+}
+
+.hero-dot.tone-alert {
+  background: var(--danger);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.hero-time {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text);
+}
+
+.hero-time.is-alert {
+  color: var(--danger);
+}
+
+.hero-idle {
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+
+.sum-ring {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.sum-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--s-2);
+  margin-top: var(--s-3);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--line);
+}
+
+.metric {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.metric-val {
+  font-size: var(--fs-lg);
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.metric-lab {
+  font-size: var(--fs-2xs);
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.metric.is-zero .metric-val {
+  color: var(--text-3);
+}
+
+.metric.is-changed .metric-val {
+  color: var(--accent);
+}
+
+.metric.is-alert .metric-val {
+  color: var(--danger);
+}
+
+/* ══════════════ Activity feed ══════════════ */
+
+.log-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.log-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.log-item:last-child {
+  border-bottom: none;
+}
+
+.log-dot {
+  width: 5px;
+  height: 5px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--text-3);
+}
+
+.log-item.is-priority .log-dot {
+  background: var(--danger);
+}
+
+.log-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.log-event {
+  font-size: var(--fs-md);
+  color: var(--text-2);
+}
+
+.log-event strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.log-item.is-priority .log-event strong {
+  color: var(--danger);
+}
+
+.log-job {
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.log-time {
+  flex-shrink: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ══════════════ Lookup ══════════════ */
+
+.lookup-card {
+  max-width: 560px;
+  padding: var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+
+.lookup-intro {
+  margin: 0 0 var(--s-4);
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+.lookup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-top: var(--s-3);
+}
+
+.lookup-result {
+  max-width: 560px;
+  margin-top: var(--s-4);
+  animation: fade 180ms var(--ease);
+}
+
+.lookup-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+
+.lookup-table th,
+.lookup-table td {
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+.lookup-table th {
+  width: 50%;
+  font-weight: 400;
+  color: var(--text-3);
+}
+
+.lookup-table td {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.lookup-table tr:last-child th,
+.lookup-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ══════════════ Settings ══════════════ */
+
+.set-card {
+  max-width: 560px;
+  padding: var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+
+.set-head {
+  margin-bottom: var(--s-2);
+}
+
+.set-title {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+.set-note {
+  margin: 2px 0 0;
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+}
+
+.set-group {
+  margin-top: var(--s-4);
+  transition: opacity 160ms var(--ease);
+}
+
+.set-group.is-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.set-group-label {
+  margin-bottom: var(--s-1);
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+}
+
+.set-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.set-row:last-child {
+  border-bottom: none;
+}
+
+.set-row.is-master {
+  padding-top: 0;
+}
+
+.set-row.is-stacked {
+  flex-wrap: wrap;
+  cursor: default;
+}
+
+.set-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.set-name {
+  display: block;
+  font-size: var(--fs-md);
+  color: var(--text);
+}
+
+.set-desc {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+}
+
+.set-diag-btn {
+  margin-top: var(--s-2);
+}
+
+.diag-out {
+  margin: var(--s-2) 0 0;
+  padding: var(--s-3);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  color: var(--text-2);
+  font: 11px/1.6 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 220px;
+  overflow: auto;
+}
+
+/* A full field list is long and meant to be read and copied. */
+#probeOut {
+  max-height: 420px;
+  user-select: text;
+}
+
+.set-select {
+  width: 100%;
+  height: 32px;
+  margin-top: var(--s-2);
+  cursor: pointer;
+}
+
+/* Toggle switch */
+.set-row input[type="checkbox"] {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+
+.switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 30px;
+  height: 18px;
+  border-radius: var(--r-full);
+  background: var(--surface-3);
+  border: 1px solid var(--line-strong);
+  transition: background 160ms var(--ease), border-color 160ms var(--ease);
+}
+
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-2);
+  transition: transform 160ms var(--ease), background 160ms var(--ease);
+}
+
+input:checked ~ .switch {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+input:checked ~ .switch::after {
+  transform: translateX(12px);
+  background: #06130c;
+}
+
+input:focus-visible ~ .switch {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ══════════════ Empty state ══════════════ */
+
+.empty-state {
+  padding: var(--s-6) var(--s-4);
+  text-align: center;
+}
+
+.empty-icon {
+  display: none; /* the emoji read as clip-art against everything else */
+}
+
+.empty-title {
+  margin: 0 0 var(--s-1);
+  font-size: var(--fs-md);
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.empty-hint {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+
+/* ══════════════ Responsive ══════════════ */
+
+@media (max-width: 1024px) {
+  .db-page {
+    padding: var(--s-4);
+  }
+
+  .af-grid-two {
+    grid-template-columns: 1fr;
+  }
+}
+
+/*
+ * Below the width the table needs, each row becomes a card: name on top, the
+ * digest beneath. The activity feed is a plain list and needs no changes.
+ */
+@media (max-width: 1200px) {
+  .table-scroll {
+    overflow-x: visible;
+  }
+
+  #jobsTable thead {
+    display: none;
+  }
+
+  #jobsTable,
+  #jobsTable tbody {
+    display: block;
+    width: 100%;
+  }
+
+  /*
+   * Tall enough to contain the vertical action strip — now 3 × 26px buttons
+   * plus 2 × 2px gaps, since the editor button is gone and the countdown is
+   * hidden here in favour of the one in the summary hero. Content is centred
+   * rather than top-aligned, so the two text lines sit against the middle of
+   * the button column instead of leaving a gap beneath them.
+   */
+  /*
+   * Rows, not cards: no fill, no radius, no gap — just a hairline between
+   * them, the same separator the wide table uses.
+   */
+  #jobsTable tr {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    min-height: 116px;
+    /* Right inset is the strip's width, so it never covers the title's tail or
+       the countdown ring — which is itself clickable now. */
+    padding: var(--s-3) 32px var(--s-3) var(--s-4);
+    border-bottom: 1px solid var(--line);
+  }
+
+  #jobsTable tr:last-child {
+    border-bottom: none;
+  }
+
+  /* An alerted card carries a fifth control, the text "Clear" button. */
+  #jobsTable tr.alert-row {
+    min-height: 144px;
+  }
+
+  #jobsTable tbody tr:hover td {
+    background: none;
+  }
+
+  #jobsTable tr:hover {
+    background: var(--surface);
+  }
+
+  #jobsTable td:not(.cell-job):not(.cell-summary):not(.cell-actions):not(.cell-drag) {
+    display: none;
+  }
+
+  #jobsTable td {
+    padding: 0;
+    border-bottom: none;
+    white-space: normal;
+  }
+
+  /* Full-height grip strip down the card's left edge — easy to grab on touch. */
+  #jobsTable td.cell-drag {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 26px;
+  }
+
+  #jobsTable td.cell-drag .drag-handle {
+    width: 26px;
+    height: 100%;
+  }
+
+  /*
+   * No right padding of its own: the card reserves the strip's 38px, so the
+   * title gets back the ~80px the old horizontal cluster occupied.
+   */
+  #jobsTable td.cell-job {
+    display: block;
+    padding: 0 0 var(--s-2) var(--s-4);
+  }
+
+  #jobsTable td.cell-summary {
+    display: block;
+    padding-left: var(--s-4);
+  }
+
+  /*
+   * Mirrors the drag grip on the left: a full-height vertical strip down the
+   * card's right edge, always visible. No border or background — depth in this
+   * design comes from surface lightness, and the card behind it is enough.
+   */
+  #jobsTable td.cell-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+    width: 30px;
+    padding: 2px 0;
+    text-align: center;
+  }
+
+  /* Horizontal spacing from the wide-table layout would offset the column. */
+  #jobsTable td.cell-actions .btn + .btn,
+  #jobsTable td.cell-actions .btn-xs + .btn-xs {
+    margin-left: 0;
+  }
+
+  /* Stacked, the text button has to fit the strip's width like the icons. */
+  #jobsTable td.cell-actions .row-ring {
+    display: none;
+  }
+
+  /* No reserved gutter here — see the .has-tags rule. A card's title wraps
+     rather than sharing a row with the chip, so nothing is left ragged. */
+  #jobsTable.has-tags .job-head {
+    display: flex;
+  }
+
+  #jobsTable td.cell-actions .alert-clear {
+    width: 26px;
+    padding: 0;
+    font-size: var(--fs-2xs);
+  }
+
+  .alert-row td:first-child {
+    box-shadow: none;
+  }
+
+  #jobsTable tr.alert-row {
+    box-shadow: inset 2px 0 0 var(--danger);
+  }
+
+  #jobsTable tr.drop-before td,
+  #jobsTable tr.drop-after td {
+    box-shadow: none;
+  }
+
+  #jobsTable tr.drop-before {
+    box-shadow: inset 0 2px 0 var(--accent);
+  }
+
+  #jobsTable tr.drop-after {
+    box-shadow: inset 0 -2px 0 var(--accent);
+  }
+
+  .sum-ring {
+    display: inline-grid;
+  }
+}
+
+@media (max-width: 640px) {
+  /* No padding-top — the sticky tabs must stay flush under the header. */
+  .db-page {
+    padding: 0 var(--s-3) var(--s-3);
+  }
+
+  .tabs {
+    gap: var(--s-4);
+  }
+
+  .af-actions .btn,
+  .lookup-actions .btn {
+    flex: 1;
+  }
+}
+
+/*
+ * Side-panel widths. The action strip stays exactly where it is — a vertical
+ * column on the right edge at every width. An earlier version un-pinned it
+ * here into a static block below the content, which both contradicted the
+ * strip layout and added a whole row to every card's height.
+ */
+@media (max-width: 400px) {
+  .db-page {
+    padding: 0 var(--s-3) var(--s-4);
+  }
+
+  .drag-handle {
+    opacity: 1; /* no hover on touch, so the grip stays visible */
+  }
+}

@@ -1,0 +1,5 @@
+/* Uses Upwork native classes; no custom tile styling needed. */
+
+.air3-line-clamp-wrapper .is-clamped {
+  -webkit-line-clamp: 5 !important;
+}

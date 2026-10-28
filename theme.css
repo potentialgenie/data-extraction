@@ -1,0 +1,129 @@
+/*
+ * Design system. Restraint is the whole idea:
+ *   · one accent (emerald) plus red reserved strictly for alerts — no gold,
+ *     no gradients, no glows. Colour is information, not decoration.
+ *   · depth comes from surface lightness, not from borders. Hairlines are used
+ *     to separate, never to enclose.
+ *   · five type sizes and one spacing scale, so nothing is ad hoc.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  /* Surfaces — each step is a small lightness rise, which reads as elevation */
+  --bg: #0a0a0b;
+  --surface: #101012;
+  --surface-2: #16161a;
+  --surface-3: #1d1d22;
+
+  /* Hairlines */
+  --line: rgba(255, 255, 255, 0.07);
+  --line-strong: rgba(255, 255, 255, 0.13);
+
+  /* Text */
+  --text: #ecedef;
+  --text-2: #9a9ba3;
+  --text-3: #64656d;
+
+  /* Accent — a single hue, slightly desaturated so it reads calm, not neon */
+  --accent: #35c17d;
+  --accent-dim: #2aa96c;
+  --accent-soft: rgba(53, 193, 125, 0.13);
+  --accent-line: rgba(53, 193, 125, 0.32);
+
+  /* Alerts only */
+  --danger: #ef7370;
+  --danger-soft: rgba(239, 115, 112, 0.12);
+  --danger-line: rgba(239, 115, 112, 0.3);
+
+  /* Paused — the third and last hue. A held countdown is a state the user
+     chose, so it is warm enough to spot at a glance but never red, which here
+     means something needs attention. */
+  --paused: #d9a54c;
+  --paused-line: rgba(217, 165, 76, 0.42);
+
+  /* Type scale */
+  --fs-2xs: 10px;
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-lg: 15px;
+  --fs-xl: 19px;
+
+  /* Spacing scale */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-full: 999px;
+
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.7);
+
+  --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+}
+
+/*
+ * `scroll`, not `auto`: the scrollbar is always present. It stops the layout
+ * jumping sideways by the gutter's width whenever the list grows past a
+ * screenful or a tab with shorter content is selected.
+ */
+html {
+  color-scheme: dark;
+  overflow-y: scroll;
+}
+
+body {
+  font-family: var(--font);
+  font-size: var(--fs-md);
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--r-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+button {
+  font-family: inherit;
+  color: inherit;
+}
+
+.hidden {
+  display: none !important;
+}
