@@ -36,7 +36,10 @@
   "content_scripts": [
     {
       "matches": [
-        "https://www.upwork.com/nx/search/jobs/*"
+        "https://www.upwork.com/nx/search/jobs/*",
+        "https://www.upwork.com/nx/find-work/*",
+        "https://www.upwork.com/jobs/*",
+        "https://www.upwork.com/freelance-jobs/*"
       ],
       "js": ["api.js", "content.js"],
       "css": ["content.css"],

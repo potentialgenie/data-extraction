@@ -3,3 +3,30 @@
 .air3-line-clamp-wrapper .is-clamped {
   -webkit-line-clamp: 5 !important;
 }
+
+/* Sits on the live job page. Appended outside <body> so it does not
+   retrigger the tile observer. */
+.upwork-simple-copy-jd {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 2147483646;
+  margin: 0;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: #1c1917;
+  color: #fafaf9;
+  font: 600 13px/1.2 system-ui, -apple-system, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+}
+
+.upwork-simple-copy-jd:hover {
+  background: #292524;
+}
+
+.upwork-simple-copy-jd.is-busy {
+  cursor: progress;
+  opacity: 0.85;
+}
